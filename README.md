@@ -88,7 +88,7 @@ Running the benchmark will not wait for connection from the mining script, just 
 ## Automatic restart on crashes
 If you experience occasional crashes of the miner, consider running it in an infinite loop with a delay.
 
-    while true; do ./a.out; sleep 1; done
+    while true; do ./cltuna; sleep 1; done
 
 
 # Known bugs/limitations
