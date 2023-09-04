@@ -30,6 +30,8 @@ Only tested on Linux (Ubuntu 20) so far.
 https://github.com/nullhashpixel/fortuna
 
 - Install and compile the miner core, see above steps 1-4
+
+- Install the fortuna code and setup your wallet as described in the fortuna repository
   
 - Start the mining core(s): ```./cltuna```
 
