@@ -12,6 +12,7 @@ tips: $gputunaminer
 
 # 1) Requirements
 Only tested on Linux (Ubuntu 20) so far.
+NOT compatible with WSL at the moment, working on it :)
 
     apt install build-essential opencl-headers clinfo nvidia-opencl-dev
 
