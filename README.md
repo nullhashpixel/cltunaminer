@@ -2,9 +2,13 @@
 Experimental OpenCL based miner for TUNA
 
 Please keep in mind this is an early experimental version of the miner, please report issues and the hash rates you get with your devices to the issue tracker on Github. 
+Let's make it compatible with as many devices and operating systems as possible to improve decentralization!
 
 **this miner core can only calculate hashes, for submitting transactions it needs this fork of the official repo:**
 https://github.com/nullhashpixel/fortuna
+
+tips: $gputunaminer 
+
 
 # 1) Requirements
 Only tested on Linux (Ubuntu 20) so far.
