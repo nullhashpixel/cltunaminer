@@ -24,24 +24,7 @@ Only tested on Linux (Ubuntu 20) so far.
 
     ./cltuna
 
-# Advanced stuff
-
-## Running the miner core and making it available to outside machines in the network on port 12345
-
-    ./cltuna 0.0.0.0 12345
-
-## Benchmark
-Running the benchmark will not wait for connection from the mining script, just computes the hash rate.
-
-    ./cltuna benchmark
-
-## Automatic restart on crashes
-If you experience occasional crashes of the miner, consider running it in an infinite loop with a delay.
-
-    while true; do ./a.out; sleep 1; done
-
-
-# Mining with GPU
+# 5) Start mining with GPU
 
 *To be able to mine, you also need the custom fork of the TypeScript transaction building code from:*
 https://github.com/nullhashpixel/fortuna
@@ -83,6 +66,23 @@ const miners = [
 |L40   |   Linux  |3.7 GH/s  |
 |RTX 3090   | Linux  |1.8 GH/s   |
 |RTX 4090   | Linux  |3.8 GH/s   |
+
+
+# Advanced stuff
+
+## Running the miner core and making it available to outside machines in the network on port 12345
+
+    ./cltuna 0.0.0.0 12345
+
+## Benchmark
+Running the benchmark will not wait for connection from the mining script, just computes the hash rate.
+
+    ./cltuna benchmark
+
+## Automatic restart on crashes
+If you experience occasional crashes of the miner, consider running it in an infinite loop with a delay.
+
+    while true; do ./a.out; sleep 1; done
 
 
 # Known bugs/limitations
