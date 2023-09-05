@@ -1,10 +1,34 @@
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#pragma comment(lib, "OpenCL.lib")
+#pragma comment(lib, "Ws2_32.lib")
+#endif
 #include "sha256.h"
 #include <time.h>
 #include <stdlib.h>
+#include <math.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
+#include <stdint.h>
+#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)  
+
+uint64_t microseconds() {
+    LARGE_INTEGER fq, t;
+    QueryPerformanceFrequency(&fq);
+    QueryPerformanceCounter(&t);
+    return (1000000 * t.QuadPart) / fq.QuadPart;
+}
+
+#else
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <math.h>
 #include <sys/time.h>
+#endif
+
 
 const int nloops = 64; // the same number needs to be set in the kernel!
 
@@ -62,7 +86,7 @@ uint8_t tallymarker_hextobin(const char * str, char * bytes, size_t blen) {
 
 
 int main(int argc, char *argv[]) {
-    printf("CLTUNA OpenCL core v1.0\n");
+    printf("CLTUNA OpenCL core v1.1\n");
     printf("usage:    ./cltuna [hostname] [port]\n");
     printf("examples: ./cltuna\n");
     printf("          ./cltuna 0.0.0.0 12345\n\n");
@@ -87,7 +111,6 @@ int main(int argc, char *argv[]) {
     char bytes[68];
 
     sha256_init();
-
     srand(time(NULL));
 
     // run with any argument to start benchmark mode
@@ -107,6 +130,17 @@ int main(int argc, char *argv[]) {
         printf("hash rate: %f/s\n", hash_rate);
         exit(0);
     }
+
+#ifdef _WIN32
+    int iResult;
+    WSADATA wsaData;
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        printf("WSAStartup failed: %d\n", iResult);
+        return 1;
+    }
+#endif
 
     // Socket communication
     printf("Creating socket...\n");
@@ -140,7 +174,6 @@ int main(int argc, char *argv[]) {
     memset(bytes,0,68);
     sha256_crypt(bytes, 67, 2, 8, 65532, result);
     printf("TEST: %s\n", result);
-
     printf("--------\n");
 
     // Wait for work
@@ -198,12 +231,14 @@ int main(int argc, char *argv[]) {
             tallymarker_hextobin(txbytes_hex, bytes, 67);
             bytes[67]=0;
 
-            // For rate measurement, might not work on Windows...
+#ifdef _WIN32
+            srand( microseconds() + rand());
+#else
             struct timeval tv;
             gettimeofday(&tv,NULL);
             unsigned long time_in_micros = 1000000 * tv.tv_sec + tv.tv_usec;
             srand(time_in_micros + rand());
-
+#endif
             clock_t time_1 = clock();
             uint64_t n_hashes = 0;
             while ((clock()-time_1) / CLOCKS_PER_SEC < 1.1) {

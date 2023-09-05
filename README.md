@@ -52,11 +52,18 @@ If you experience occasional crashes of the miner, consider running it in an inf
 
     while true; do ./a.out; sleep 1; done
 
+
+# Changelog
+
+````
+v1.1: 23/09/05 Windows compatibility
+v1.0: 23/09/04 initial release
+````
+
 # Known bugs/limitations
 
     Multi GPU support
     AMD cards untested
-    Windows support
 
 # Disclaimer
 
