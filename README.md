@@ -14,8 +14,17 @@ tips: $gputunaminer
 Only tested on Linux (Ubuntu 20) so far.
 NOT compatible with WSL at the moment, working on it :)
 
+For NVIDIA GPUs, the proprietary graphics driver is needed. On Ubuntu search for "Additional drivers" and select the latest Nvidia version. NOT the line which contains "Nouveau".
+After this, run:
+
     apt update
     apt install build-essential opencl-headers clinfo nvidia-opencl-dev
+
+and then check with
+
+    clinfo
+
+if number of platforms is > 0. (It is 1 in most cases with a single GPU and no special hardware)
 
 # 2) Download the repository
 
