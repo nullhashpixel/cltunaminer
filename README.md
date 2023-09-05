@@ -9,10 +9,11 @@ https://github.com/nullhashpixel/fortuna
 
 tips: $gputunaminer 
 
+# Building (Linux)
 
-# 1) Requirements
+## 1) Requirements
 Only tested on Linux (Ubuntu 20) so far.
-NOT compatible with WSL at the moment, working on it :)
+NOT compatible with WSL, Windows users please compile it with Visual Studio, see below.
 
 For NVIDIA GPUs, the proprietary graphics driver is needed. On Ubuntu search for "Additional drivers" and select the latest Nvidia version. NOT the line which contains "Nouveau".
 After this, run:
@@ -26,20 +27,65 @@ and then check with
 
 if number of platforms is > 0. (It is 1 in most cases with a single GPU and no special hardware)
 
-# 2) Download the repository
+## 2) Download the repository
 
     git clone https://github.com/nullhashpixel/cltunaminer.git
     cd cltunaminer
 
-# 3) Compiling from source
+## 3) Compiling from source
 
     make
 
-# 4) Running the miner core
+## 4) Running the miner core
 
     ./cltuna
 
-# 5) Start mining with GPU
+# Building (Windows)
+
+## 1) Requirements
+
+- Install CUDA Toolkit 12.2 from
+  
+https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local
+
+- Install Visual Studio from https://visualstudio.microsoft.com/downloads/
+
+During the installation select "Building C++", no other options. This alone is a 18 GB download.
+
+## 2) Download the repository
+
+If you have git installed, run:
+
+    git clone https://github.com/nullhashpixel/cltunaminer.git
+    cd cltunaminer
+
+otherwise you can also just download the repository.
+
+## 3) Create VS project
+
+- Create an empty project (search for "blank solution")
+- copy the sha256.h to "Header files", the "sha256.c"+"main.c" to "Source files"
+- Right click on your project name in the right panel, select properties
+- Add the library and include paths of you CUDA Toolkit installation, the paths are not always exactly the same, but by default look like:
+
+- Library path: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\lib\x64
+- Include path: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include
+
+The Library path should contain an "OpenCL.lib"
+The include path should contain a folder "CL" with a file "cl.h"
+
+## 4) Compile (green play symbol)
+
+This will create an exe file inside your project directory in a subfolder called Debug or Release
+
+## 5) Copy the executable 
+
+Copy the executable into your `cltunaminer/` directory, where the sha256_opencl.cl is.
+Run it from there.
+
+
+
+# Start mining with GPU
 
 *To be able to mine, you also need the custom fork of the TypeScript transaction building code from:*
 https://github.com/nullhashpixel/fortuna
