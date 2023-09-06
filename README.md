@@ -123,13 +123,16 @@ const miners = [
 
 |model   | OS  | hash rate  |
 |---|---|---|
-|RTX A4000   | Linux  |1.0 GH/s   |
-|RTX 2080S   | Linux  |1.1GH/s   |
-|RTX 6000   | Linux  |3.5 GH/s   |
-|L40   |   Linux  |3.7 GH/s  |
 |GTX 1070 | Linux | 500 MH/s |
 |RTX 3060 TI | Linux/Windows | 980 MH/s |
+|RTX 3060 Ti   | Linux  | 970MH/s   |
+|RTX A4000   | Linux  |1.0 GH/s   |
+|RTX 2080S   | Linux  |1.1GH/s   |
+|RTX 3080TI   | Linux  |1.6 GH/s   |
+|RTX 3060   | Linux  |1.1 GH/s   |
 |RTX 3090   | Linux  |1.8 GH/s   |
+|RTX 6000   | Linux  |3.5 GH/s   |
+|L40   |   Linux  |3.7 GH/s  |
 |RTX 4090   | Linux  |3.8 GH/s   |
 
 
