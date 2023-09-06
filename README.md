@@ -96,22 +96,19 @@ https://github.com/nullhashpixel/fortuna
   
 - Start the mining core(s): ```./cltuna```
 
+- for automatic restart: run `while true; do ./cltuna; sleep 1; done`
+  
 ![Screenshot miner core started](./core_started.png)
 
-- Add the hostname(s) of your miner cores to the **main.ts** file of the mining code in the *cltunaminer* directory of the TypeScript code
+- Add the hostname(s) of your miner cores to the **.env** file in the *cltunaminer/* directory of the TypeScript code
 
 Simple example for running with 1 local GPU:
 ````
-const miners = [
-        {port: 2023}
-]
+MINER_CORE_URLS="127.0.0.1:2023"
 ````
 Running the code on two different machines in your network:
 ````
-const miners = [
-        {hostname: "192.168.0.100", port: 2023},
-        {hostname: "192.168.0.101", port: 2023}
-]
+MINER_CORE_URLS="192.168.0.100:2023,192.168.0.101:2023"
 ````
 
 - (in a different terminal window): Start the TypeScript mining script with deno: ```deno task cltunaminer mine```
@@ -119,10 +116,47 @@ const miners = [
 - check the window of your GPU miner core, it should show you hash rates, estimates for how often solutions are found and the current difficulty
 ![Screenshot miner core running](./core_running.png)
 
+- for automatic restart: run `./run.sh`
+
+# Multi-GPU
+
+- each GPU (or other compatible OpenCL device) needs 1 separate instance of the miner core, each must listen on a different port
+  
+- to list you devices, run
+  
+````
+    ./cltuna list
+````
+possible output:
+````
+device CL_DEVICE_TYPE_GPU: platform 0 device 0, has 128 compute units, 2550 MHz
+device CL_DEVICE_TYPE_GPU: platform 0 device 1, has 128 compute units, 2550 MHz
+````
+
+- for 1st GPU: `./cltuna 127.0.0.1 2023 0 0`
+- for 2nd GPU: `./cltuna 127.0.0.1 2024 0 1`
+  
+- in your fortuna (deno code) repository, add both to the `.env` file
+````
+MINER_CORE_URLS="127.0.0.1:2023,127.0.0.1:2024"
+````
+
 # Hash rates for GPUs
+
+## v1.3
 
 |model   | OS  | hash rate  |
 |---|---|---|
+|GTX 1060 | Linux | 356 MH/s |
+|RTX 2080S   | Linux  | 1.2 GH/s   |
+|3080 Ti | Linux | 1.7 GH/s |
+|RTX 4090 | Linux | 4.7 GH/s |
+
+## previous versions
+
+|model   | OS  | hash rate  |
+|---|---|---|
+|GT 730 | Linux | 20.5MH/s |
 |GTX 1070 | Linux | 500 MH/s |
 |RTX 3060 TI | Linux/Windows | 980 MH/s |
 |RTX 3060 Ti   | Linux  | 970MH/s   |
@@ -134,6 +168,7 @@ const miners = [
 |RTX 6000   | Linux  |3.5 GH/s   |
 |L40   |   Linux  |3.7 GH/s  |
 |RTX 4090   | Linux  |3.8 GH/s   |
+
 
 
 # Advanced stuff
