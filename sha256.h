@@ -22,10 +22,6 @@
 #define SHA256_BINARY_SIZE			32
 #define SHA256_RESULT_SIZE			16
 
-#ifndef uint32_t
-#define uint32_t unsigned int
-#endif
-
 #define MAX_SOURCE_SIZE 0x10000000
 
 #ifdef __cplusplus
