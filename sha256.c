@@ -1,3 +1,9 @@
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#pragma warning(disable:4996)
+#endif
+
 #include "sha256.h"
 
 static cl_platform_id platform_id = NULL;
