@@ -123,6 +123,9 @@ const miners = [
 
 |model   | OS  | hash rate  |
 |---|---|---|
+|GeForce GTX 1650 Ti (laptop card) | Linux | 356 MH/s |
+|RTX 3050 Ti | Linux | 373 MH/s |
+|RX580 | Windows | 450MH/s |
 |GTX 1070 | Linux | 500 MH/s |
 |RTX 3060 TI | Linux/Windows | 980 MH/s |
 |RTX 3060 Ti   | Linux  | 970MH/s   |
