@@ -157,6 +157,7 @@ If you experience occasional crashes of the miner, consider running it in an inf
 # Changelog
 
 ````
+v1.2: 23/09/06 fix too low entropy bug
 v1.1: 23/09/05 Windows compatibility
 v1.0: 23/09/04 initial release
 ````

@@ -86,7 +86,7 @@ uint8_t tallymarker_hextobin(const char * str, char * bytes, size_t blen) {
 
 
 int main(int argc, char *argv[]) {
-    printf("CLTUNA OpenCL core v1.1\n");
+    printf("CLTUNA OpenCL core v1.2\n");
     printf("usage:    ./cltuna [hostname] [port]\n");
     printf("examples: ./cltuna\n");
     printf("          ./cltuna 0.0.0.0 12345\n\n");
