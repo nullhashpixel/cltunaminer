@@ -258,7 +258,7 @@ void createkernel() {
         size_t len = 0;
         cl_int ret = CL_SUCCESS;
         ret = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
-        char *buffer = calloc(len, sizeof(char));
+        char *buffer = (char*)calloc(len, sizeof(char));
         ret = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, len, buffer, NULL);
 
         // CL compiler log

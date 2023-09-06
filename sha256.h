@@ -11,7 +11,7 @@
 #include <CL/cl.h>
 #endif
 
-#define npar (1<<20)
+#define npar (1<<21)
 
 
 #define SHA256_FORMAT_LABEL			"sha256-opencl"

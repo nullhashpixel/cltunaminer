@@ -1,6 +1,6 @@
-CC = gcc
+CC = g++
 
-CFLAGS = -lm -Ofast -Wno-deprecated-declarations
+CFLAGS = -std=c++11 -lm -Ofast -Wno-deprecated-declarations
 TARGET = cltuna
 
 # Detect the OS

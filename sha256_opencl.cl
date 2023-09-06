@@ -229,7 +229,7 @@ __kernel void sha256_crypt_kernel(__global uint *data_info,__global char *plain_
   mdigest[9] = 0;
 
 
-  for(int loop_i=0;loop_i<64;loop_i++) {
+  for(int loop_i=0;loop_i<256;loop_i++) {
   #pragma unroll
   for (t = 0; t < 13; t++){
      plain_key[t] = plain_key0[t];

@@ -4,10 +4,12 @@
 #pragma comment(lib, "OpenCL.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #endif
+
 #include "sha256.h"
 #include <time.h>
 #include <stdlib.h>
 #include <math.h>
+#include <chrono>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -15,6 +17,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)  
+
 
 uint64_t microseconds() {
     LARGE_INTEGER fq, t;
@@ -30,7 +33,7 @@ uint64_t microseconds() {
 #endif
 
 
-const int nloops = 64; // the same number needs to be set in the kernel!
+const int nloops = 256; // the same number needs to be set in the kernel!
 
 // https://stackoverflow.com/a/23898449/266720
 uint8_t tallymarker_hextobin(const char * str, char * bytes, size_t blen) {
@@ -115,18 +118,17 @@ int main(int argc, char *argv[]) {
 
     // run with any argument to start benchmark mode
     if (argc > 1 && strncmp(hostname, "benchmark", 9) == 0) {
-        clock_t time_1 = clock();
+        auto begin = std::chrono::high_resolution_clock::now();
         uint64_t n_hashes = 0;
-        while ((clock()-time_1) / CLOCKS_PER_SEC < 1.1) {
+        while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin).count() < 1100) {
             memset(result, 0, 256);
             memset(bytes,0,67);
             sha256_crypt(bytes, 67, 2, 6, 1, result);
             n_hashes += npar*nloops;
         }
-        double cpu_time_used, hash_rate;
-        clock_t end = clock();
-        cpu_time_used = ((double) (end - time_1)) / CLOCKS_PER_SEC;
-        hash_rate = (double)(n_hashes)/cpu_time_used;
+        auto end = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+        double hash_rate = (double)(n_hashes)/(elapsed.count() * 0.001);
         printf("hash rate: %f/s\n", hash_rate);
         exit(0);
     }
@@ -197,7 +199,7 @@ int main(int argc, char *argv[]) {
 
         while(true) { 
 
-            clock_t time_0 = clock();
+            auto time_0 = std::chrono::high_resolution_clock::now();
             // Receive client's message
             memset(client_message, '\0', sizeof(client_message));
             memset(tmp_message, '\0', sizeof(tmp_message));
@@ -239,9 +241,10 @@ int main(int argc, char *argv[]) {
             unsigned long time_in_micros = 1000000 * tv.tv_sec + tv.tv_usec;
             srand(time_in_micros + rand());
 #endif
-            clock_t time_1 = clock();
+            auto time_1 = std::chrono::high_resolution_clock::now();
             uint64_t n_hashes = 0;
-            while ((clock()-time_1) / CLOCKS_PER_SEC < 1.1) {
+            bool found = false;
+            while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - time_1).count() < 3100) {
                 memset(result, 0, 256);
 
                 // Do the magic and get some fish!
@@ -259,25 +262,24 @@ int main(int argc, char *argv[]) {
                         printf("Can't send\n");
                         break;
                     }
+                    found = true;
+                    break;
                 }
             }
-            double cpu_time_used, hash_rate;
-            clock_t end = clock();
-            cpu_time_used = ((double) (end - time_1)) / CLOCKS_PER_SEC;
-            hash_rate = (double)(n_hashes)/cpu_time_used;
+            auto end = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - time_0);
+            double hash_rate = (double)(n_hashes)/(elapsed.count() * 0.001);
             printf("hash rate: %f, expect block every %f seconds. \n", hash_rate, (pow(2,4*LZ)*65536./(1+DN)) / hash_rate);
 
             // Respond to client with ping (single "." char to signal alive and ready)
             strcpy(server_message, ".");
-            if (send(client_sock, server_message, strlen(server_message), 0) < 0){
-                printf("Can't send\n");
-                break;
+            if (!found) {
+                if (send(client_sock, server_message, strlen(server_message), 0) < 0){
+                    printf("Can't send\n");
+                    break;
+                }
             }
-            clock_t time_2 = clock();
 
-            double t_overhead = ((double) (time_1 - time_0 + time_2 - end)) / CLOCKS_PER_SEC;
-            double t_mine = ((double) (end - time_1)) / CLOCKS_PER_SEC;
-            printf("overhead: %f %%\n", 100.*t_overhead/(t_overhead+t_mine));
             printf("done, waiting for client...\n");
         }
     }
