@@ -87,22 +87,26 @@ void sha256_crypt(char* input, int string_len, int j_offset, int LZ, int DN, cha
     char r2 = rand() % 256;
     char r3 = rand() % 256;
     char r4 = rand() % 256;
+    char r5 = rand() % 256;
+    char r6 = rand() % 256;
+    char r7 = rand() % 256;
+    char r8 = rand() % 256;
+    char r9 = rand() % 256;
 
     memcpy(saved_plain, input, string_len+1);
     memset(saved_plain+4,0,16);
 
     // prepare NONCE
 
-    saved_plain[4]  = 0x43;                        // miner ID
-    saved_plain[5]  = 0x4c;                        // | 
-    saved_plain[6]  = 0x54;                        // |
-    saved_plain[7]  = 0x55;                        // |
-    saved_plain[8]  = 0x33;                        // | 'CLTU3'
-
-    saved_plain[9]  = r1;                          // random nonce, randomized for each call to sha256_crypt
-    saved_plain[10] = r2;                          // |
-    saved_plain[11] = r3;                          // |
-    saved_plain[12] = r4;                          // |
+    saved_plain[4]  = r1;                          // random nonce, randomized for each call to sha256_crypt
+    saved_plain[5]  = r2;                          // | 
+    saved_plain[6]  = r3;                          // |
+    saved_plain[7]  = r4;                          // |
+    saved_plain[8]  = r5;                          // | 
+    saved_plain[9]  = r6;                          // | 
+    saved_plain[10] = r7;                          // |
+    saved_plain[11] = r8;                          // |
+    saved_plain[12] = r9;                          // |
 
     saved_plain[13] = 0;                           // inner-most loop counter will be incremented on GPU in each thread
 
