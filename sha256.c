@@ -20,6 +20,7 @@ static size_t source_size;
 static cl_program program;
 static cl_kernel kernel;
 static cl_command_queue command_queue;
+cl_device_id *devices;
 
 static cl_mem pinned_saved_keys, pinned_partial_hashes, buffer_out, buffer_keys, data_info;
 static cl_uint *partial_hashes;
@@ -35,15 +36,15 @@ static size_t local_work_size=1;
 static size_t string_len;
 
 void load_source();
-void createDevice();
+void createDevice(int, int);
 void createkernel();
 void create_clobj();
 
 void crypt_all();
 
-void sha256_init() {
+void sha256_init(int platform_idx, int device_idx) {
 	load_source();
-	createDevice();
+	createDevice(platform_idx, device_idx);
 	createkernel();
 	create_clobj();
 }
@@ -240,10 +241,89 @@ void create_clobj(){
 	clSetKernelArg(kernel, 2, sizeof(buffer_out), (void *) &buffer_out);
 }
 
-void createDevice() {
-	ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-	ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_ALL, 1, &device_id, &ret_num_devices);
-	context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
+void listDevices() {
+    ret = clGetPlatformIDs(0, NULL, &ret_num_platforms);
+    if (ret_num_platforms < 1) {
+        printf("error: no platforms available, make sure graphic drivers and OpenCL are installed.\n");
+        exit(1);
+    }
+    cl_platform_id *platforms = new cl_platform_id[ret_num_platforms]; 
+	ret = clGetPlatformIDs(ret_num_platforms, platforms, &ret_num_platforms);
+    if (ret != CL_SUCCESS) {
+        printf("error: could not obtain platforms.\n");
+        exit(1);
+    }
+    for( int i=0; i<(int)ret_num_platforms; i++ ) {
+        ret = clGetDeviceIDs( platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &ret_num_devices);
+        if (ret_num_devices < 0) {
+            printf("info: platform has no devices.\n");
+        } else {
+            cl_device_id *devices = new cl_device_id[ ret_num_platforms ];
+            ret = clGetDeviceIDs( platforms[i], CL_DEVICE_TYPE_ALL, ret_num_devices, devices, &ret_num_devices);
+
+            cl_device_type type;
+            cl_uint ui;
+            cl_uint freq;
+            for (int j=0; j< (int)ret_num_devices; j++) {
+                clGetDeviceInfo( devices[j], CL_DEVICE_TYPE, sizeof(type), &type, NULL );
+                clGetDeviceInfo( devices[j], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(ui), &ui, NULL );
+                clGetDeviceInfo( devices[j], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(freq), &freq, NULL);
+                if (type == CL_DEVICE_TYPE_CPU) {
+                    printf("device CL_DEVICE_TYPE_CPU: platform %d device %d, has %d compute units, %d MHz\n", i, j, ui, freq); 
+                } else if (type == CL_DEVICE_TYPE_GPU) {
+                    printf("device CL_DEVICE_TYPE_GPU: platform %d device %d, has %d compute units, %d MHz\n", i, j, ui, freq); 
+                } else if (type == CL_DEVICE_TYPE_ACCELERATOR) {
+                    printf("device CL_DEVICE_TYPE_ACCELERATOR: platform %d device %d, has %d compute units, %d MHz\n", i, j, ui, freq); 
+                } else {
+                    printf("unknown device: platform %d device %d, has %d compute units, %d MHz\n", i, j, ui, freq);
+                }
+            }
+        }
+    }
+}
+
+void createDevice(int platform_idx, int device_idx) {
+    ret = clGetPlatformIDs(0, NULL, &ret_num_platforms);
+    if (ret_num_platforms < 1) {
+        printf("error: no platforms available, make sure graphic drivers and OpenCL are installed.\n");
+        exit(1);
+    }
+    cl_platform_id *platforms = new cl_platform_id[ret_num_platforms];
+    ret = clGetPlatformIDs(ret_num_platforms, platforms, &ret_num_platforms);
+    if (ret != CL_SUCCESS) {
+        printf("error: could not obtain platforms.\n");
+        exit(1);
+    }
+    if (platform_idx > ret_num_platforms -1) {
+        printf("error: platform invalid: %d\n", platform_idx);
+        exit(3);
+    }
+    for( int i=0; i<(int)ret_num_platforms; i++ ) {
+        ret = clGetDeviceIDs( platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &ret_num_devices);
+        if (ret_num_devices < 0) {
+            printf("info: platform has no devices.\n");
+        } else {
+            devices = new cl_device_id[ ret_num_platforms ];
+            ret = clGetDeviceIDs( platforms[i], CL_DEVICE_TYPE_ALL, ret_num_devices, devices, &ret_num_devices);
+            if (device_idx > ret_num_devices-1) {
+                printf("error: device invalid: %d\n", device_idx);
+                exit(4);
+            }
+            for (int j=0; j< (int)ret_num_devices; j++) {
+                if (i==platform_idx && j==device_idx) {
+                    printf("using device: platform %d device %d.\n", i, j);
+                    device_id = devices[j];
+                    context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
+                    printf("context created. ret=%d\n", ret);
+                    if (ret != CL_SUCCESS) {
+                        printf("error: could not create context for platform %d device %d.\n", i, j);
+                        exit(2);
+                    }
+                    return;
+                }
+            }
+        }
+    }
 }
 
 void createkernel() {

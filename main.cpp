@@ -89,23 +89,31 @@ uint8_t tallymarker_hextobin(const char * str, char * bytes, size_t blen) {
 
 
 int main(int argc, char *argv[]) {
-    printf("CLTUNA OpenCL core v1.2\n");
-    printf("usage:    ./cltuna [hostname] [port]\n");
-    printf("examples: ./cltuna\n");
-    printf("          ./cltuna 0.0.0.0 12345\n\n");
-    printf("          ./cltuna benchmark\n");
-    printf("starting...\n");
+    printf("CLTUNA OpenCL core v1.3\n");
+    printf("usage:    ./cltuna [hostname] [port] [platform] [device]\n");
+    printf("examples: ./cltuna                 (default)\n");
+    printf("          ./cltuna 0.0.0.0 12345   (run exposed to network on port 12345)\n");
+    printf("          ./cltuna benchmark       (run benchmark)\n");
+    printf("          ./cltuna list            (show list of platform and device IDs)\n");
 
     char hostname[256] = "127.0.0.1"; // only accessible on the same machine, use 0.0.0.0 to make it available to the network
     uint16_t port = 2023;
-    if (argc == 2) {
+    int platform_idx = 0;
+    int device_idx = 0;
+
+    if (argc > 1) {
         strncpy(hostname, argv[1], 255);
         hostname[255] = 0;
-    } else if (argc == 3) {
-        strncpy(hostname, argv[1], 255);
-        hostname[255] = 0;
+    }
+    if (argc > 2) {
         port = atoi(argv[2]);
     }
+    if (argc > 3) {
+        platform_idx = atoi(argv[3]);
+    } 
+    if (argc > 4) {
+        device_idx = atoi(argv[4]);
+    } 
 
     // result string which will be returned
     char result[256];
@@ -113,7 +121,13 @@ int main(int argc, char *argv[]) {
     // input plaintext
     char bytes[68];
 
-    sha256_init();
+    // list all devices
+    if (argc > 1 && strncmp(hostname, "list", 4) == 0) {
+        listDevices();
+        exit(0);
+    }
+
+    sha256_init(platform_idx, device_idx);
     srand(time(NULL));
 
     // run with any argument to start benchmark mode
@@ -132,6 +146,7 @@ int main(int argc, char *argv[]) {
         printf("hash rate: %f/s\n", hash_rate);
         exit(0);
     }
+    printf("starting...\n");
 
 #ifdef _WIN32
     int iResult;

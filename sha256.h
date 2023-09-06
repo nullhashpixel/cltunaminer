@@ -28,7 +28,8 @@
 extern "C" {
 #endif
 
-void sha256_init();
+void listDevices();
+void sha256_init(int,int);
 void sha256_crypt(char*,int,int,int,int, char*);
 
 #ifdef __cplusplus
