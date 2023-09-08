@@ -203,8 +203,8 @@ v1.0: 23/09/04 initial release
 
 # Known bugs/limitations
 
-    Multi GPU support
-    AMD cards untested
+    - Windows compilation is not as easy as on Linux
+    - When using remote Kupo/Ogmios, connection errors and errors due to request limits etc are not all properly handled. Using local instance helps.
 
 # Disclaimer
 
