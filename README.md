@@ -143,13 +143,14 @@ MINER_CORE_URLS="127.0.0.1:2023,127.0.0.1:2024"
 
 # Hash rates for GPUs
 
-## v1.3
+## >= v1.3
 
 |model   | OS  | hash rate  |
 |---|---|---|
+
 |GTX 1060 | Linux | 356 MH/s |
 |RTX 2080S   | Linux  | 1.2 GH/s   |
-|3080 Ti | Linux | 1.7 GH/s |
+|RTX 3080 Ti | Linux | 1.7 GH/s |
 |RTX 4090 | Linux | 4.7 GH/s |
 
 ## previous versions
@@ -157,6 +158,9 @@ MINER_CORE_URLS="127.0.0.1:2023,127.0.0.1:2024"
 |model   | OS  | hash rate  |
 |---|---|---|
 |GT 730 | Linux | 20.5MH/s |
+|GeForce GTX 1650 Ti (laptop card) | Linux | 356 MH/s |
+|RTX 3050 Ti | Linux | 373 MH/s |
+|RX580 | Windows | 450MH/s |
 |GTX 1070 | Linux | 500 MH/s |
 |RTX 3060 TI | Linux/Windows | 980 MH/s |
 |RTX 3060 Ti   | Linux  | 970MH/s   |

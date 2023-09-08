@@ -89,7 +89,7 @@ uint8_t tallymarker_hextobin(const char * str, char * bytes, size_t blen) {
 
 
 int main(int argc, char *argv[]) {
-    printf("CLTUNA OpenCL core v1.3\n");
+    printf("CLTUNA OpenCL core v1.4\n");
     printf("usage:    ./cltuna [hostname] [port] [platform] [device]\n");
     printf("examples: ./cltuna                 (default)\n");
     printf("          ./cltuna 0.0.0.0 12345   (run exposed to network on port 12345)\n");
@@ -145,7 +145,36 @@ int main(int argc, char *argv[]) {
         double hash_rate = (double)(n_hashes)/(elapsed.count() * 0.001);
         printf("hash rate: %f/s\n", hash_rate);
         exit(0);
+    } else if (argc > 1 && strncmp(hostname, "find", 4) == 0) {
+        if (argc > 6) {
+            int LZ = atoi(argv[5]);
+            int DN = atoi(argv[6]);
+            int num = 1;
+            if (argc > 7) {
+                num = atoi(argv[7]);
+            }
+            int num_total = num;
+            printf("find %d hashes with LZ=%d DN=%d...\n", num_total, LZ, DN);
+            auto begin = std::chrono::high_resolution_clock::now();
+            while (num > 0) {
+                memset(result, 0, 256);
+                memset(bytes,0,67);
+                sha256_crypt(bytes, 67, 0, LZ, DN, result);
+                if (result[0] != 0) {
+                    printf("\x1b[32mfound: %s\x1b[0m\n", result);
+                    num -= 1;
+                }
+            }
+            auto end = std::chrono::high_resolution_clock::now();
+            printf("found %d hashes with LZ=%d DN=%d in %lu seconds.\n", num_total, LZ, DN, std::chrono::duration_cast<std::chrono::seconds>(end - begin).count());
+            exit(0);
+        } else {
+            printf("find needs at least 6 arguments.\n");
+            exit(7);
+        }
+
     }
+
     printf("starting...\n");
 
 #ifdef _WIN32
@@ -218,9 +247,18 @@ int main(int argc, char *argv[]) {
             // Receive client's message
             memset(client_message, '\0', sizeof(client_message));
             memset(tmp_message, '\0', sizeof(tmp_message));
-            if (recv(client_sock, tmp_message, sizeof(tmp_message), 0) < 0){
-                printf("Couldn't receive\n");
-                break;
+
+            while( strlen(tmp_message) < 134) {
+                memset(client_message, '\0', sizeof(client_message));
+                memset(tmp_message, '\0', sizeof(tmp_message));
+                if (recv(client_sock, tmp_message, sizeof(tmp_message), 0) < 0){
+                    printf("Couldn't receive\n");
+                    break;
+                }
+                if (strlen(tmp_message) < 134) {
+                    printf("\x1b[31merror: invalid message.\x1b[0m\n");
+                    exit(8);
+                }
             }
             
             // Delimited by \n, only take last message and discard all previous ones
@@ -284,7 +322,26 @@ int main(int argc, char *argv[]) {
             auto end = std::chrono::high_resolution_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - time_0);
             double hash_rate = (double)(n_hashes)/(elapsed.count() * 0.001);
-            printf("hash rate: %f, expect block every %f seconds. \n", hash_rate, (pow(2,4*LZ)*65536./(1+DN)) / hash_rate);
+
+            uint64_t seconds = (pow(2,4*LZ)*65536./(1+DN)) / hash_rate;
+            uint64_t weeks   = seconds / (86400*7);
+            seconds -= weeks * 86400*7;
+            uint64_t days    = seconds / 86400;
+            seconds -= days * 86400;
+            uint64_t hours   = seconds / 3600;
+            seconds -= hours * 3600;
+            uint64_t minutes = seconds / 60;
+            seconds -= minutes*60;
+            
+            if (weeks > 4) {
+                printf("hash rate: %f, expect block every %ld weeks %ld days. \n", hash_rate, weeks, days);
+            } else if (weeks > 0 || days > 0) {
+                printf("hash rate: %f, expect block every %ld days %ld hours. \n", hash_rate, weeks*7+days, hours);
+            } else if (hours > 0) {
+                printf("hash rate: %f, expect block every %ld hours %ld minutes. \n", hash_rate, hours, minutes);
+            } else {
+                printf("hash rate: %f, expect block every %ld minutes %ld seconds. \n", hash_rate, minutes, seconds);
+            }
 
             // Respond to client with ping (single "." char to signal alive and ready)
             strcpy(server_message, ".");

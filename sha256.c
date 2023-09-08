@@ -5,6 +5,7 @@
 #endif
 
 #include "sha256.h"
+#include <random>
 
 static cl_platform_id platform_id = NULL;
 static cl_device_id device_id = NULL;  
@@ -42,6 +43,8 @@ void create_clobj();
 
 void crypt_all();
 
+std::mt19937 mt{ std::random_device{}() };
+
 void sha256_init(int platform_idx, int device_idx) {
 	load_source();
 	createDevice(platform_idx, device_idx);
@@ -51,20 +54,14 @@ void sha256_init(int platform_idx, int device_idx) {
 
 void prepare_result(char* output, uint64_t j) {
     for(int i=0; i<67;i++) {
-        if (i==13) {
-            sprintf(output+i*2, "%02x", (unsigned char)(saved_plain[i] + partial_hashes[result_size*j+8] & 0xff));
-        } else if(i==14) {
-            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff0000000000) >> 40));
-        } else if(i==15) {
-            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff00000000) >> 32));
-        } else if(i==16) {
-            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff000000) >> 24));
+        if(i==16) {
+            sprintf(output+i*2, "%02x", (unsigned char)(saved_plain[i] + partial_hashes[result_size*j+8] & 0xff)); //inner-loop 
         } else if(i==17) {
-            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff0000) >> 16));
+            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff0000) >> 16));                                    //outer loop
         } else if(i==18) {
-            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff00) >> 8));
+            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff00) >> 8));                                       //|
         } else if(i==19) {
-            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff)));
+            sprintf(output+i*2, "%02x", (unsigned char)((j & 0xff)));                                              //|
         } else {
             sprintf(output+i*2, "%02x", (unsigned char)(saved_plain[i]));
         }
@@ -84,43 +81,59 @@ void sha256_crypt(char* input, int string_len, int j_offset, int LZ, int DN, cha
 	datai[1] = 1; 
 	datai[2] = string_len;
 
-    char r1 = rand() % 256;
-    char r2 = rand() % 256;
-    char r3 = rand() % 256;
-    char r4 = rand() % 256;
-    char r5 = rand() % 256;
-    char r6 = rand() % 256;
-    char r7 = rand() % 256;
-    char r8 = rand() % 256;
-    char r9 = rand() % 256;
+    uint32_t r1 = mt();
+    uint32_t r2 = mt();
+    uint32_t r3 = mt();
 
     memcpy(saved_plain, input, string_len+1);
     memset(saved_plain+4,0,16);
 
     // prepare NONCE
 
-    saved_plain[4]  = r1;                          // random nonce, randomized for each call to sha256_crypt
-    saved_plain[5]  = r2;                          // | 
-    saved_plain[6]  = r3;                          // |
-    saved_plain[7]  = r4;                          // |
-    saved_plain[8]  = r5;                          // | 
-    saved_plain[9]  = r6;                          // | 
-    saved_plain[10] = r7;                          // |
-    saved_plain[11] = r8;                          // |
-    saved_plain[12] = r9;                          // |
-
-    saved_plain[13] = 0;                           // inner-most loop counter will be incremented on GPU in each thread
-
-    saved_plain[14] = 0;                           // outer loop will be taken from GPU global work index
-    saved_plain[15] = 0;                           // |
-    saved_plain[16] = 0;                           // |
-    saved_plain[17] = 0;                           // |
+    saved_plain[4]  = (r1>>24)&0xff;                          // random nonce, randomized for each call to sha256_crypt
+    saved_plain[5]  = (r1>>16)&0xff; 
+    saved_plain[6]  = (r1>>8)&0xff; 
+    saved_plain[7]  = (r1)&0xff; 
+    saved_plain[8]  = (r2>>24)&0xff; 
+    saved_plain[9]  = (r2>>16)&0xff; 
+    saved_plain[10] = (r2>>8)&0xff; 
+    saved_plain[11] = (r2)&0xff;
+    saved_plain[12] = (r3>>24)&0xff;
+    saved_plain[13] = (r3>>16)&0xff;
+    saved_plain[14] = (r3>>8)&0xff;
+    saved_plain[15] = (r3)&0xff;
+    saved_plain[16] = 0;                           // |inner-most loop counter will be incremented on GPU in each thread
+    saved_plain[17] = 0;                           // |outer loop will be taken from GPU global work index
     saved_plain[18] = 0;                           // |
     saved_plain[19] = 0;                           // |
 
 	crypt_all();
 
-    if (LZ == 9) {
+    if (LZ == 5) {
+        for (int j=0;j<npar;j++) {
+        if (partial_hashes[result_size*j] < ((DN & 0xfff0)>>4) && partial_hashes[result_size*j+1] < ((DN & 0x000f)<<28)) {
+                prepare_result(output, j);
+            }
+        }
+    } else if (LZ == 6) {
+        for (int j=0;j<npar;j++) {
+        if (partial_hashes[result_size*j] < ((DN & 0xff00)>>8) && partial_hashes[result_size*j+1] < ((DN & 0x00ff)<<24)) {
+                prepare_result(output, j);
+            }
+        }
+    } else if (LZ == 7) {
+        for (int j=0;j<npar;j++) {
+        if (partial_hashes[result_size*j] < ((DN & 0xf000)>>12) && partial_hashes[result_size*j+1] < ((DN & 0x0fff)<<20)) {
+                prepare_result(output, j);
+            }
+        }
+    } else if (LZ == 8) {
+        for (int j=0;j<npar;j++) {
+            if (partial_hashes[result_size*j] == 0 && partial_hashes[result_size*j+1] < ((DN & 0xffff)<<16)) {
+                prepare_result(output, j);
+            }
+        }
+    } else if (LZ == 9) {
         for (int j=0;j<npar;j++) {
             if (partial_hashes[result_size*j] == 0 && partial_hashes[result_size*j+1] < ((DN & 0xffff)<<12)) {
                 prepare_result(output, j);
