@@ -162,6 +162,7 @@ MINER_CORE_URLS="127.0.0.1:2023,127.0.0.1:2024"
 |RTX 3050 Ti | Linux | 373 MH/s |
 |RX580 | Windows | 450MH/s |
 |GTX 1070 | Linux | 500 MH/s |
+|RTX 3070  |HiveOS| 700 MH/s |
 |RTX 3060 TI | Linux/Windows | 980 MH/s |
 |RTX 3060 Ti   | Linux  | 970MH/s   |
 |RTX A4000   | Linux  |1.0 GH/s   |
@@ -172,7 +173,6 @@ MINER_CORE_URLS="127.0.0.1:2023,127.0.0.1:2024"
 |RTX 6000   | Linux  |3.5 GH/s   |
 |L40   |   Linux  |3.7 GH/s  |
 |RTX 4090   | Linux  |3.8 GH/s   |
-
 
 
 # Advanced stuff
