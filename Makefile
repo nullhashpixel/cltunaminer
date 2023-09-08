@@ -16,11 +16,11 @@ ifeq ($(UNAME_S),Darwin)
     LDFLAGS += -framework OpenCL
 endif
 
-$(TARGET): main.cpp sha256.c
-	$(CC) main.cpp sha256.c $(LDFLAGS) $(CFLAGS) -o $(TARGET)
+$(TARGET): main.cpp sha256.cpp
+	$(CC) main.cpp sha256.cpp $(LDFLAGS) $(CFLAGS) -o $(TARGET)
 
-clangbuild: main.cpp sha256.c
-	clang main.cpp sha256.c $(LDFLAGS) $(CFLAGS) -o $(TARGET)
+clangbuild: main.cpp sha256.cpp
+	clang main.cpp sha256.cpp $(LDFLAGS) $(CFLAGS) -lstdc++ -o $(TARGET)
 
 clean:
 	$(RM) $(TARGET)
