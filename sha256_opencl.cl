@@ -231,20 +231,13 @@ __kernel void sha256_crypt_kernel(__global uint *data_info,__global char *plain_
 
   for(int loop_i=0;loop_i<256;loop_i++) {
   #pragma unroll
-  for (t = 0; t < 13; t++){
+  for (t = 0; t < 68; t++){
      plain_key[t] = plain_key0[t];
   }
-  plain_key[13] = loop_i & 0xff;
-  plain_key[14] = (ix & 0xff0000000000) >> 40;
-  plain_key[15] = (ix & 0xff00000000) >> 32;
-  plain_key[16] = (ix & 0xff000000) >> 24;
+  plain_key[16] = loop_i & 0xff; 
   plain_key[17] = (ix & 0xff0000) >> 16;
   plain_key[18] = (ix & 0xff00) >> 8;
   plain_key[19] = (ix & 0xff);
-  #pragma unroll
-  for (t = 20; t < 68; t++){
-     plain_key[t] = plain_key0[t];
-  }
 
       uint digest[8];
       ulen = 67; 
@@ -352,11 +345,18 @@ __kernel void sha256_crypt_kernel(__global uint *data_info,__global char *plain_
 
       sha256_process2(W, digest);
 
-      if (digest[0] < mdigest[0] || (digest[0]==mdigest[0] && digest[1] < mdigest[1]) || (digest[0]==mdigest[0] && digest[1]==mdigest[1] && digest[2] < mdigest[2])) {
-        for(t=0;t<8;t++) {
-            mdigest[t] = digest[t];
-        }
-        mdigest[8] = loop_i;
+      //if (digest[0] < mdigest[0] || (digest[0]==mdigest[0] && digest[1] < mdigest[1]) || (digest[0]==mdigest[0] && digest[1]==mdigest[1] && digest[2] < mdigest[2]) || (digest[0]==mdigest[0] && digest[1]==mdigest[1] && digest[2] < mdigest[2])) {
+      for (int d_idx=0;d_idx<8;d_idx++) {
+        if (digest[d_idx] > mdigest[d_idx]) {
+            break;
+        } else if (digest[d_idx] < mdigest[d_idx]) {
+            #pragma unroll 
+            for(t=0;t<8;t++) {
+                mdigest[t] = digest[t];
+            }
+            mdigest[8] = loop_i;
+            break;
+       }
       }
     }
     digest2[ix*result_size+0] = mdigest[0];
